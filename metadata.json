@@ -1,0 +1,6 @@
+{
+  "name": "SafarYar",
+  "description": "سامانه هوشمند تطبیق راننده و مسافر برای سفرهای بین‌شهری",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

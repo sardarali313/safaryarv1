@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SafarYar | داشبورد</title>
+    <link rel="icon" type="image/svg+xml" href="./frontend/assets/safaryar-logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: { sans: ["Vazirmatn", "ui-sans-serif", "system-ui"] },
+          },
+        },
+      };
+    </script>
+    <style>
+      html,
+      body {
+        font-family: Vazirmatn, ui-sans-serif, system-ui;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen bg-slate-50 text-slate-900">
+    <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/80 backdrop-blur">
+      <div class="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4">
+        <div class="flex items-center gap-3">
+          <button id="btn-user-avatar" type="button" title="ویرایش پروفایل" class="relative group h-11 w-11 flex items-center justify-center rounded-2xl bg-indigo-600 font-extrabold text-white shadow ring-4 ring-indigo-200 hover:ring-indigo-400 transition cursor-pointer">
+            <span id="hdr-avatar-initial">؟</span>
+            <span class="absolute -bottom-1 -right-1 bg-white rounded-full p-0.5 text-[10px] shadow border">✏️</span>
+          </button>
+          <div>
+            <div class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
+              <span id="hdr-name"></span>
+              <button id="btn-edit-profile-link" type="button" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 hover:underline">
+                (ویرایش حساب)
+              </button>
+            </div>
+            <div class="mt-0.5 text-xs text-slate-600">
+              <span id="hdr-role" class="font-semibold"></span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-4">
+          <a
+            href="./index.html"
+            class="flex items-center gap-2.5 transition hover:opacity-80"
+            title="بازگشت به صفحه اصلی سفریار"
+          >
+            <img src="./frontend/assets/safaryar-logo.svg" class="h-11 w-auto object-contain" alt="لوگوی سفریار" />
+            <span class="text-sm font-black text-slate-900 hidden sm:inline">سفریار</span>
+          </a>
+          <button
+            id="btn-logout"
+            class="rounded-2xl bg-slate-900 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-slate-800"
+          >
+            خروج از حساب
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-6xl px-4 py-8">
+      <section id="panel-driver" class="hidden">
+        <div class="mb-6">
+          <div class="text-xl font-extrabold text-slate-900">پنل راننده</div>
+          <div class="mt-1 text-sm text-slate-600">ثبت سفر جدید، مدیریت کیف پول و مدیریت درخواست‌های دریافتی</div>
+        </div>
+
+        <div id="driver-approval-alert" class="mb-6"></div>
+        <div id="driver-profile-summary" class="mb-6 hidden"></div>
+        <div id="driver-wallet-card" class="mb-6"></div>
+
+        <div id="driver-profile-box" class="mb-8 hidden">
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="text-base font-extrabold text-slate-900">ثبت پروفایل خودرو</div>
+            <div class="mt-1 text-sm text-slate-600">قبل از ثبت سفر، اطلاعات خودرو را وارد کنید.</div>
+
+            <form id="driver-profile-form" class="mt-6 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label class="text-sm font-semibold text-slate-700">برند</label>
+                <input
+                  name="brand"
+                  class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                  placeholder="مثلاً پژو"
+                  required
+                />
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-slate-700">مدل</label>
+                <input
+                  name="model"
+                  class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                  placeholder="مثلاً 206"
+                  required
+                />
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-slate-700">پلاک</label>
+                <input
+                  name="plate"
+                  class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                  placeholder="مثلاً 12الف345 ایران67"
+                  required
+                />
+              </div>
+              <div>
+                <label class="text-sm font-semibold text-slate-700">رنگ</label>
+                <input
+                  name="color"
+                  class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                  placeholder="مثلاً سفید"
+                  required
+                />
+              </div>
+              <div class="sm:col-span-2">
+                <label class="text-sm font-semibold text-slate-700">ظرفیت خودرو (نفر)</label>
+                <input
+                  name="capacity"
+                  type="number"
+                  min="1"
+                  max="20"
+                  class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                  placeholder="مثلاً 4"
+                  required
+                />
+              </div>
+              <div class="sm:col-span-2">
+                <button
+                  type="submit"
+                  class="w-full rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-emerald-700"
+                >
+                  ثبت پروفایل خودرو
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <div class="text-base font-extrabold text-slate-900">ثبت سفر جدید و ایستگاه‌ها</div>
+                <div class="mt-0.5 text-xs text-slate-500">مبدأ، مقصد و تا ۳ ایستگاه توقف میانی را روی نقشه یا فرم تعیین کنید.</div>
+              </div>
+            </div>
+
+            <div class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 p-3">
+              <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                <span class="text-xs font-bold text-slate-700">انتخاب موقعیت روی نقشه:</span>
+                <div class="flex flex-wrap gap-1 text-[11px]">
+                  <button id="driver-map-mode-origin" type="button" class="rounded-lg bg-emerald-600 px-2.5 py-1 font-bold text-white shadow-sm ring-2 ring-emerald-300">🟢 مبدأ</button>
+                  <button id="driver-map-mode-dest" type="button" class="rounded-lg bg-slate-200 px-2.5 py-1 font-bold text-slate-700 hover:bg-slate-300">🔴 مقصد</button>
+                  <button id="driver-map-mode-stop1" type="button" class="rounded-lg bg-slate-200 px-2.5 py-1 font-bold text-slate-700 hover:bg-slate-300">🟡 ایستگاه ۱</button>
+                  <button id="driver-map-mode-stop2" type="button" class="rounded-lg bg-slate-200 px-2.5 py-1 font-bold text-slate-700 hover:bg-slate-300">🟡 ایستگاه ۲</button>
+                  <button id="driver-map-mode-stop3" type="button" class="rounded-lg bg-slate-200 px-2.5 py-1 font-bold text-slate-700 hover:bg-slate-300">🟡 ایستگاه ۳</button>
+                </div>
+              </div>
+
+              <div id="driver-trip-map" class="h-60 w-full rounded-xl border border-slate-200 bg-slate-100 z-0 overflow-hidden"></div>
+
+              <div class="mt-2 flex flex-wrap items-center gap-1 text-[11px] text-slate-600">
+                <span class="font-semibold text-slate-500">شهرهای سریع:</span>
+                <button type="button" data-city="تهران" data-lat="35.6892" data-lng="51.3890" class="btn-driver-city-pill rounded bg-white px-2 py-0.5 font-medium border border-slate-200 hover:bg-slate-100">تهران</button>
+                <button type="button" data-city="اصفهان" data-lat="32.6546" data-lng="51.6680" class="btn-driver-city-pill rounded bg-white px-2 py-0.5 font-medium border border-slate-200 hover:bg-slate-100">اصفهان</button>
+                <button type="button" data-city="شیراز" data-lat="29.5918" data-lng="52.5837" class="btn-driver-city-pill rounded bg-white px-2 py-0.5 font-medium border border-slate-200 hover:bg-slate-100">شیراز</button>
+                <button type="button" data-city="مشهد" data-lat="36.2972" data-lng="59.6067" class="btn-driver-city-pill rounded bg-white px-2 py-0.5 font-medium border border-slate-200 hover:bg-slate-100">مشهد</button>
+                <button type="button" data-city="تبریز" data-lat="38.0962" data-lng="46.2690" class="btn-driver-city-pill rounded bg-white px-2 py-0.5 font-medium border border-slate-200 hover:bg-slate-100">تبریز</button>
+                <button type="button" data-city="رشت" data-lat="37.2808" data-lng="49.5832" class="btn-driver-city-pill rounded bg-white px-2 py-0.5 font-medium border border-slate-200 hover:bg-slate-100">رشت</button>
+                <button type="button" data-city="قم" data-lat="34.6401" data-lng="50.8764" class="btn-driver-city-pill rounded bg-white px-2 py-0.5 font-medium border border-slate-200 hover:bg-slate-100">قم</button>
+              </div>
+            </div>
+
+            <form id="driver-trip-form" class="mt-5 space-y-4">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label class="text-sm font-semibold text-slate-700">مبدأ</label>
+                  <input
+                    name="origin"
+                    id="driver-input-origin"
+                    class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                    placeholder="مثلاً تهران"
+                    required
+                  />
+                </div>
+                <div>
+                  <label class="text-sm font-semibold text-slate-700">مقصد</label>
+                  <input
+                    name="destination"
+                    id="driver-input-dest"
+                    class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                    placeholder="مثلاً اصفهان"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between gap-2">
+                  <label class="text-sm font-semibold text-slate-700">ایستگاه‌های بین‌راهی</label>
+                  <button
+                    id="btn-add-stop"
+                    type="button"
+                    class="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 ring-1 ring-indigo-200 hover:bg-indigo-100"
+                  >
+                    + افزودن ایستگاه
+                  </button>
+                </div>
+                <div id="stop-list" class="mt-3 space-y-2"></div>
+              </div>
+
+              <div class="grid gap-4 sm:grid-cols-3">
+                <div class="sm:col-span-2">
+                  <label class="text-sm font-semibold text-slate-700">تاریخ و زمان حرکت (شمسی)</label>
+                  <div class="mt-2 grid grid-cols-5 gap-2">
+                    <div class="col-span-3">
+                      <input
+                        id="driver-input-date-shamsi"
+                        name="departure_date_shamsi"
+                        type="text"
+                        dir="ltr"
+                        class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center text-sm font-bold text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                        placeholder="۱۴۰۴/۰۱/۱۵"
+                        required
+                      />
+                      <span class="mt-1 block text-[11px] text-slate-500 text-right">فرمت: سال/ماه/روز (مثلاً ۱۴۰۴/۰۱/۱۵)</span>
+                    </div>
+                    <div class="col-span-2">
+                      <input
+                        id="driver-input-time"
+                        name="departure_time_clock"
+                        type="time"
+                        class="w-full rounded-2xl border border-slate-200 bg-white px-3 py-3 text-center text-sm font-bold text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                        required
+                      />
+                      <span class="mt-1 block text-[11px] text-slate-500 text-right">ساعت و دقیقه</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label class="text-sm font-semibold text-slate-700">صندلی خالی</label>
+                  <input
+                    name="available_seats"
+                    type="number"
+                    min="1"
+                    max="20"
+                    class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                    placeholder="مثلاً 3"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label class="text-sm font-semibold text-slate-700">قیمت (تومان)</label>
+                <input
+                  name="price"
+                  type="number"
+                  min="0"
+                  class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                  placeholder="مثلاً 150000"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                class="w-full rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-indigo-700"
+              >
+                ثبت سفر
+              </button>
+            </form>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <div class="text-base font-extrabold text-slate-900">مدیریت درخواست‌های سفر</div>
+                <div class="mt-1 text-sm text-slate-600">یک سفر را انتخاب کنید تا درخواست‌ها نمایش داده شوند.</div>
+              </div>
+              <button
+                id="btn-refresh-requests"
+                type="button"
+                class="rounded-2xl bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200"
+              >
+                بروزرسانی
+              </button>
+            </div>
+
+            <div class="mt-5 space-y-3">
+              <select
+                id="driver-trip-select"
+                class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+              ></select>
+              <div id="driver-trip-actions" class="hidden flex items-center justify-between rounded-2xl bg-slate-50 p-3 ring-1 ring-slate-200">
+                <span class="text-xs text-slate-600">تغییر وضعیت این سفر:</span>
+                <button id="btn-complete-trip" class="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-semibold text-white shadow-sm hover:bg-slate-800">
+                  علامت‌گذاری به عنوان پایان‌یافته
+                </button>
+              </div>
+              <div id="driver-trips-empty"></div>
+            </div>
+
+            <div id="driver-requests-list" class="mt-5 space-y-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-passenger" class="hidden">
+        <div class="mb-6">
+          <div class="text-xl font-extrabold text-slate-900">پنل مسافر</div>
+          <div class="mt-1 text-sm text-slate-600">جستجوی سفر، مدیریت درخو‌است‌ها و نظرسنجی و امتیازدهی به راننده</div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="space-y-6">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div class="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div class="text-base font-extrabold text-slate-900">انتخاب مبدأ و مقصد روی نقشه</div>
+                  <div class="mt-1 text-xs text-slate-500">روی نقشه یا شهرهای آماده کلیک کنید تا مبدأ و مقصد فرم تنظیم شود.</div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button id="map-mode-origin" type="button" class="rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white shadow-sm ring-2 ring-emerald-300">
+                    🟢 تنظیم مبدأ
+                  </button>
+                  <button id="map-mode-dest" type="button" class="rounded-xl bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-300">
+                    🔴 تنظیم مقصد
+                  </button>
+                </div>
+              </div>
+
+              <div id="passenger-map" class="mt-4 h-72 w-full rounded-2xl border border-slate-200 bg-slate-100 z-0 overflow-hidden"></div>
+
+              <div class="mt-3 flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
+                <span class="font-semibold text-slate-500">شهرهای سریع:</span>
+                <button type="button" data-city="تهران" data-lat="35.6892" data-lng="51.3890" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">تهران</button>
+                <button type="button" data-city="اصفهان" data-lat="32.6546" data-lng="51.6680" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">اصفهان</button>
+                <button type="button" data-city="شیراز" data-lat="29.5918" data-lng="52.5837" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">شیراز</button>
+                <button type="button" data-city="مشهد" data-lat="36.2972" data-lng="59.6067" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">مشهد</button>
+                <button type="button" data-city="تبریز" data-lat="38.0962" data-lng="46.2690" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">تبریز</button>
+                <button type="button" data-city="رشت" data-lat="37.2808" data-lng="49.5832" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">رشت</button>
+                <button type="button" data-city="کرج" data-lat="35.8400" data-lng="50.9391" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">کرج</button>
+                <button type="button" data-city="قم" data-lat="34.6401" data-lng="50.8764" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">قم</button>
+                <button type="button" data-city="اهواز" data-lat="31.3183" data-lng="48.6706" class="btn-city-pill rounded-lg bg-slate-100 px-2.5 py-1 font-medium hover:bg-slate-200">اهواز</button>
+              </div>
+
+              <div class="mt-5 border-t border-slate-100 pt-4">
+                <form id="passenger-search-form" class="space-y-3">
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label class="text-xs font-semibold text-slate-700">شهر مبدأ</label>
+                      <input
+                        name="origin_city"
+                        id="input-origin-city"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                        placeholder="همه مبداها یا مثلاً تهران"
+                      />
+                    </div>
+                    <div>
+                      <label class="text-xs font-semibold text-slate-700">شهر مقصد</label>
+                      <input
+                        name="destination_city"
+                        id="input-dest-city"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                        placeholder="همه مقصدها یا مثلاً شیراز"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid gap-3 sm:grid-cols-2">
+                    <div>
+                      <label class="text-xs font-semibold text-slate-700">تاریخ حرکت (شمسی - اختیاری)</label>
+                      <input
+                        name="departure_date"
+                        id="input-search-date"
+                        type="text"
+                        dir="ltr"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-center text-sm font-bold text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                        placeholder="مثلاً ۱۴۰۴/۰۱/۱۵"
+                      />
+                      <span class="mt-0.5 block text-[10px] text-slate-400">خالی بگذارید تا همه روزها را ببینید</span>
+                    </div>
+                    <div>
+                      <label class="text-xs font-semibold text-slate-700">ظرفیت مورد نیاز (صندلی خالی)</label>
+                      <input
+                        name="min_seats"
+                        id="input-search-seats"
+                        type="number"
+                        min="1"
+                        max="10"
+                        class="mt-1 w-full rounded-2xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                        placeholder="حداقل صندلی، مثلاً 1"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="flex items-center gap-2 pt-1">
+                    <button
+                      type="submit"
+                      class="flex-1 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-indigo-700"
+                    >
+                      🔍 جستجو و اعمال فیلترها
+                    </button>
+                    <button
+                      id="btn-clear-search-filters"
+                      type="button"
+                      class="rounded-2xl border border-slate-200 bg-slate-100 px-4 py-3 text-xs font-semibold text-slate-700 hover:bg-slate-200"
+                    >
+                      نمایش همه سفرها
+                    </button>
+                  </div>
+
+                  <div class="pt-2">
+                    <button
+                      id="btn-ai-recommend-trips"
+                      type="button"
+                      class="group flex w-full items-center justify-center gap-2.5 rounded-2xl bg-gradient-to-r from-violet-600 via-indigo-600 to-sky-600 px-5 py-3.5 text-sm font-bold text-white shadow-md transition duration-200 hover:shadow-indigo-500/30 hover:opacity-95 active:scale-[0.99]"
+                    >
+                      <span class="text-base animate-spin group-hover:animate-none">✨</span>
+                      <span>پیشنهاد هوشمند بهترین سفرها با Gemini AI</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <!-- بخش اختصاصی نمایش نتایج پیشنهاد هوشمند هوش مصنوعی -->
+            <div id="passenger-ai-recommendations" class="hidden space-y-4"></div>
+
+            <div id="passenger-results" class="space-y-5"></div>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between gap-3">
+              <div>
+                <div class="text-base font-extrabold text-slate-900">سفرهای من و ثبت نظر</div>
+                <div class="mt-1 text-sm text-slate-600">پس از اتمام یا تایید سفر، به راننده امتیاز دهید و نظر ثبت کنید.</div>
+              </div>
+              <button id="btn-refresh-my-trips" class="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-800 ring-1 ring-slate-200 hover:bg-slate-200">
+                بروزرسانی
+              </button>
+            </div>
+
+            <div id="passenger-my-trips" class="mt-5 space-y-4"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-admin" class="hidden">
+        <div class="mb-6">
+          <div class="text-xl font-extrabold text-slate-900">پنل مدیر سیستم</div>
+          <div class="mt-1 text-sm text-slate-600">آمار کلیدی، ایجاد کاربر جدید، مشاهده رمز عبور و حذف کاربران</div>
+        </div>
+
+        <div id="admin-stats" class="mb-6"></div>
+
+        <div class="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div class="text-base font-extrabold text-slate-900">افزودن کاربر جدید به سیستم</div>
+          <div class="mt-1 text-sm text-slate-600">مدیر سیستم می‌تواند مستقیم مسافر، راننده یا مدیر جدید تعریف کند.</div>
+
+          <form id="admin-add-user-form" class="mt-5 grid gap-4 sm:grid-cols-4">
+            <div>
+              <label class="text-sm font-semibold text-slate-700">نام و نام خانوادگی</label>
+              <input
+                name="name"
+                class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                placeholder="مثلاً علی اصغری"
+                required
+              />
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700">شماره همراه</label>
+              <input
+                name="phone"
+                inputmode="numeric"
+                class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                placeholder="09123456789"
+                minlength="11"
+                maxlength="11"
+                required
+              />
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700">رمز عبور</label>
+              <input
+                name="password"
+                type="text"
+                class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+                placeholder="رمز عبور"
+                required
+              />
+            </div>
+            <div>
+              <label class="text-sm font-semibold text-slate-700">نقش کاربر</label>
+              <select
+                name="role"
+                class="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2"
+              >
+                <option value="passenger">مسافر</option>
+                <option value="driver">راننده</option>
+                <option value="inspector">بازرس</option>
+                <option value="admin">مدیر سیستم</option>
+              </select>
+            </div>
+            <div class="sm:col-span-4">
+              <button
+                type="submit"
+                class="w-full rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-bold text-white shadow-sm hover:bg-indigo-700"
+              >
+                + ایجاد کاربر جدید
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-2">
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3">
+              <div class="text-base font-extrabold text-slate-900">مدیریت و حذف کاربران</div>
+            </div>
+
+            <div class="mt-4 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label class="text-xs font-bold text-slate-600">فیلتر نقش:</label>
+                <select id="admin-users-role-filter" class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500">
+                  <option value="all">همه نقش‌ها (راننده، مسافر، بازرس، مدیر)</option>
+                  <option value="driver">فقط راننده‌ها</option>
+                  <option value="passenger">فقط مسافرها</option>
+                  <option value="inspector">فقط بازرسان</option>
+                  <option value="admin">فقط مدیران</option>
+                </select>
+              </div>
+              <div>
+                <label class="text-xs font-bold text-slate-600">جستجو در کاربران:</label>
+                <input id="admin-users-search" type="text" placeholder="نام یا شماره تماس..." class="mt-1 w-full rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-800 outline-none focus:ring-2 focus:ring-indigo-500" />
+              </div>
+            </div>
+
+            <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+              <table class="w-full text-right text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">نام</th>
+                    <th class="px-4 py-3 font-semibold">نقش</th>
+                    <th class="px-4 py-3 font-semibold">شماره تماس</th>
+                    <th class="px-4 py-3 font-semibold">رمز عبور</th>
+                    <th class="px-4 py-3 font-semibold">عملیات</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-users-body" class="bg-white"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div class="text-base font-extrabold text-slate-900">گزارش‌های بازرسی و نظارت (Inspections)</div>
+              <span class="rounded-lg bg-indigo-50 px-2.5 py-1 text-xs font-bold text-indigo-700">سوابق ارزیابی بازرسان</span>
+            </div>
+            <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+              <table class="w-full text-right text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">شناسه</th>
+                    <th class="px-4 py-3 font-semibold">بازرس</th>
+                    <th class="px-4 py-3 font-semibold">نوع بازرس</th>
+                    <th class="px-4 py-3 font-semibold">سفر مربوطه</th>
+                    <th class="px-4 py-3 font-semibold">نتیجه و شرح کارشناسی</th>
+                    <th class="px-4 py-3 font-semibold">وضعیت تأیید</th>
+                    <th class="px-4 py-3 font-semibold">تاریخ</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-inspections-body" class="bg-white"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="text-base font-extrabold text-slate-900">مدیریت سفرها</div>
+            <div class="mt-4 overflow-x-auto rounded-2xl border border-slate-200">
+              <table class="w-full text-right text-sm">
+                <thead class="bg-slate-50 text-slate-600">
+                  <tr>
+                    <th class="px-4 py-3 font-semibold">شناسه</th>
+                    <th class="px-4 py-3 font-semibold">وضعیت</th>
+                    <th class="px-4 py-3 font-semibold">حرکت</th>
+                    <th class="px-4 py-3 font-semibold">قیمت/صندلی</th>
+                    <th class="px-4 py-3 font-semibold">ایستگاه‌ها</th>
+                    <th class="px-4 py-3 font-semibold">عملیات</th>
+                  </tr>
+                </thead>
+                <tbody id="admin-trips-body" class="bg-white"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-inspector" class="hidden space-y-6">
+        <div>
+          <div class="text-xl font-extrabold text-slate-900">پنل بازرسی و تایید رانندگان</div>
+          <div class="mt-1 text-sm text-slate-600">بررسی و احراز صلاحیت رانندگان جدید و تایید اطلاعات خودرو</div>
+        </div>
+
+        <div class="grid gap-6">
+          <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <div class="text-base font-extrabold text-slate-900">بررسی و تایید صلاحیت رانندگان جدید و مشخصات خودرو</div>
+                <div class="text-xs text-slate-500 mt-0.5">مشخصات هویتی و خودروی رانندگان تازه ثبت‌نام‌شده را ارزیابی و مجوز ثبت سفر صادر کنید</div>
+              </div>
+              <div class="flex items-center gap-2">
+                <select id="inspector-driver-filter" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 outline-none">
+                  <option value="pending">در انتظار بررسی بازرس</option>
+                  <option value="all">همه رانندگان</option>
+                  <option value="approved">تایید شده</option>
+                  <option value="rejected">رد صلاحیت شده</option>
+                </select>
+                <button id="btn-refresh-inspector-drivers" type="button" class="rounded-xl bg-slate-100 px-3.5 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200">
+                  🔄 به‌روزرسانی لیست رانندگان
+                </button>
+              </div>
+            </div>
+
+            <div id="inspector-drivers-list" class="mt-5 space-y-4"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="modal-edit-profile" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm hidden">
+      <div class="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-100">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div class="text-base font-extrabold text-slate-900">ویرایش اطلاعات حساب کاربری</div>
+          <button id="btn-close-edit-modal" type="button" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+        </div>
+
+        <form id="form-edit-profile" class="mt-5 space-y-4">
+          <div>
+            <label class="text-xs font-bold text-slate-700">نام و نام خانوادگی</label>
+            <input id="edit-profile-name" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2" />
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-700">شماره موبایل</label>
+            <input id="edit-profile-phone" required class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2" />
+          </div>
+
+          <div>
+            <label class="text-xs font-bold text-slate-700">رمز عبور جدید (اختیاری)</label>
+            <input id="edit-profile-password" type="text" placeholder="در صورت عدم تغییر، خالی بگذارید" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2" />
+          </div>
+
+          <div id="edit-driver-fields" class="space-y-4 pt-2 border-t border-slate-100 hidden">
+            <div class="text-xs font-extrabold text-indigo-700">اطلاعات خودرو راننده:</div>
+            <div>
+              <label class="text-xs font-bold text-slate-700">مدل/برند خودرو</label>
+              <input id="edit-driver-vehicle-model" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2" placeholder="مثلاً پژو 206" />
+            </div>
+            <div>
+              <label class="text-xs font-bold text-slate-700">ظرفیت خودرو (صندلی)</label>
+              <input id="edit-driver-vehicle-capacity" type="number" min="1" max="20" class="mt-1.5 w-full rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 shadow-sm outline-none ring-indigo-500 focus:ring-2" placeholder="مثلاً 4" />
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 pt-3">
+            <button type="submit" class="w-full rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-bold text-white shadow hover:bg-indigo-700">
+              ذخیره تغییرات
+            </button>
+            <button id="btn-cancel-edit-modal" type="button" class="w-full rounded-2xl bg-slate-100 px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-200">
+              انصراف
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="modal-driver-details" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm hidden">
+      <div class="w-full max-w-2xl rounded-3xl bg-white p-6 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+          <div>
+            <div class="text-base font-extrabold text-slate-900" id="driver-details-modal-title">اطلاعات راننده</div>
+            <div class="text-xs text-slate-500 mt-0.5">مشاهده مشخصات حساب کاربری و اطلاعات خودروی راننده</div>
+          </div>
+          <button id="btn-close-driver-modal" type="button" class="text-slate-400 hover:text-slate-600 text-lg font-bold">✕</button>
+        </div>
+
+        <div id="driver-modal-body" class="mt-5 space-y-6"></div>
+
+        <div class="mt-6 flex justify-end">
+          <button id="btn-done-driver-modal" type="button" class="rounded-2xl bg-slate-900 px-6 py-2.5 text-sm font-bold text-white shadow hover:bg-slate-800">
+            بستن
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm Delete Modal (Iframe-safe replacement for window.confirm) -->
+    <div id="modal-confirm-delete" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/50 p-4 hidden backdrop-blur-sm">
+      <div class="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl border border-slate-100 space-y-4">
+        <div class="flex items-start gap-3">
+          <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-rose-50 text-rose-600 text-xl border border-rose-100">🗑️</div>
+          <div class="space-y-1">
+            <div id="confirm-delete-title" class="text-base font-extrabold text-slate-900">تایید عملیات حذف</div>
+            <div id="confirm-delete-message" class="text-xs text-slate-600 leading-relaxed">آیا از انجام این عملیات حذف اطمینان کامل دارید؟</div>
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+          <button id="btn-cancel-delete" type="button" class="rounded-xl bg-slate-100 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-slate-200 transition">
+            انصراف
+          </button>
+          <button id="btn-do-delete" type="button" class="rounded-xl bg-rose-600 px-4 py-2 text-xs font-bold text-white shadow-sm hover:bg-rose-700 transition">
+            بله، حذف شود
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="./frontend/assets/dashboard.js"></script>
+  </body>
+</html>

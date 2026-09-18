@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SafarYar | ورود و ثبت‌نام</title>
+    <link rel="icon" type="image/svg+xml" href="./frontend/assets/safaryar-logo.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./frontend/assets/style.css" />
+  </head>
+  <body>
+    <main class="auth">
+      <div class="auth__card">
+        <a class="auth__brand" href="./index.html" aria-label="بازگشت به صفحه اصلی">
+          <img src="./frontend/assets/safaryar-logo.svg" class="auth__logo" alt="لوگوی سفریار" />
+          <span>
+            <span class="auth__title">SafarYar</span>
+            <span class="auth__subtitle">ورود و ثبت‌نام</span>
+          </span>
+        </a>
+
+        <div class="tabs" role="tablist" aria-label="ورود و ثبت‌نام">
+          <button
+            id="tab-login"
+            class="tabs__btn"
+            type="button"
+            role="tab"
+            aria-controls="pane-login"
+            aria-selected="true"
+          >
+            ورود
+          </button>
+          <button
+            id="tab-register"
+            class="tabs__btn"
+            type="button"
+            role="tab"
+            aria-controls="pane-register"
+            aria-selected="false"
+          >
+            ثبت‌نام
+          </button>
+        </div>
+
+        <section id="pane-login" class="tabs__pane" role="tabpanel" aria-labelledby="tab-login">
+          <form id="login-form" class="form">
+            <div class="field">
+              <label class="label" for="login-phone">شماره همراه</label>
+              <input
+                id="login-phone"
+                name="phone"
+                class="input"
+                inputmode="numeric"
+                placeholder="مثلاً 09123456789"
+                minlength="11"
+                maxlength="11"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="label" for="login-password">رمز عبور</label>
+              <input
+                id="login-password"
+                name="password"
+                class="input"
+                type="password"
+                placeholder="رمز عبور"
+                minlength="4"
+                required
+              />
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-lg" style="width: 100%">ورود</button>
+            </div>
+          </form>
+        </section>
+
+        <section id="pane-register" class="tabs__pane hidden" role="tabpanel" aria-labelledby="tab-register">
+          <form id="register-form" class="form">
+            <div class="field">
+              <label class="label" for="reg-name">نام و نام خانوادگی</label>
+              <input id="reg-name" name="name" class="input" placeholder="مثلاً علی رضایی" minlength="2" required />
+            </div>
+
+            <div class="field">
+              <label class="label" for="reg-phone">شماره همراه</label>
+              <input
+                id="reg-phone"
+                name="phone"
+                class="input"
+                inputmode="numeric"
+                placeholder="مثلاً 09123456789"
+                minlength="11"
+                maxlength="11"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <label class="label" for="reg-password">رمز عبور</label>
+              <input
+                id="reg-password"
+                name="password"
+                class="input"
+                type="password"
+                placeholder="حداقل ۴ کاراکتر"
+                minlength="4"
+                required
+              />
+            </div>
+
+            <div class="field">
+              <div class="label">انتخاب نقش</div>
+              <div class="role-grid" style="grid-template-columns: repeat(2, 1fr);">
+                <label class="role-option">
+                  <input type="radio" name="role" value="passenger" checked />
+                  <span class="role-option__title">مسافر</span>
+                  <span class="role-option__text">جستجو و رزرو صندلی</span>
+                </label>
+                <label class="role-option">
+                  <input type="radio" name="role" value="driver" />
+                  <span class="role-option__title">راننده</span>
+                  <span class="role-option__text">ثبت سفر و پذیرش مسافر</span>
+                </label>
+              </div>
+            </div>
+
+            <div id="driver-register-fields" class="hidden" style="margin-top: 0.75rem; padding: 1rem; border-radius: 1rem; background: #f8fafc; border: 1px solid #e2e8f0;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">مشخصات خودرو (جهت تایید صلاحیت توسط بازرس)</div>
+              
+              <div class="field" style="margin-bottom: 0.6rem;">
+                <label class="label" for="reg-vehicle-model">نوع و مدل خودرو</label>
+                <input id="reg-vehicle-model" name="vehicle_model" class="input" placeholder="مثلاً پژو پارس، سمند، تارا، دنا..." />
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem;">
+                <div class="field">
+                  <label class="label" for="reg-vehicle-color">رنگ خودرو</label>
+                  <input id="reg-vehicle-color" name="vehicle_color" class="input" placeholder="مثلاً سفید" />
+                </div>
+                <div class="field">
+                  <label class="label" for="reg-vehicle-capacity">ظرفیت مسافر (نفر)</label>
+                  <input id="reg-vehicle-capacity" name="vehicle_capacity" type="number" min="1" max="20" class="input" placeholder="مثلاً 4" value="4" />
+                </div>
+              </div>
+
+              <div class="field" style="margin-bottom: 0.4rem;">
+                <label class="label" for="reg-license-plate">شماره پلاک خودرو</label>
+                <input id="reg-license-plate" name="license_plate" class="input" placeholder="مثلاً ۲۴ ب ۶۷۸ ایران ۸۸" />
+              </div>
+
+              <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.4rem; line-height: 1.4;">
+                ⚠️ رانندگان جدید پس از بررسی و تایید اطلاعات خودرو توسط بازرس، مجاز به ثبت سفر خواهند بود.
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" class="btn btn-primary btn-lg" style="width: 100%">ثبت‌نام و ادامه</button>
+            </div>
+          </form>
+        </section>
+
+        <div class="auth__meta">
+          ورود و ثبت‌نام سریع در سفر‌یار؛ بر اساس نقش کاربر به داشبورد اختصاصی هدایت خواهید شد.
+        </div>
+      </div>
+    </main>
+
+    <script type="module" src="./frontend/assets/login.js"></script>
+  </body>
+</html>
