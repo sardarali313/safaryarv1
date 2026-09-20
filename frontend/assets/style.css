@@ -215,6 +215,7 @@ canvas {
   border-radius: 0;
   flex: 0 0 auto;
   transition: transform 0.2s ease;
+  transform: scale(2);
 }
 
 .navbar__logo:hover {
