@@ -951,6 +951,7 @@ canvas {
   border-radius: 0;
   flex: 0 0 auto;
   margin-bottom: 0.25rem;
+  transform: scale(2);
 }
 
 .auth__title {
